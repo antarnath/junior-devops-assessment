@@ -123,7 +123,7 @@ jobs:
           cache-from: type=gha
 
       - name: Scan the image for vulnerabilities
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
