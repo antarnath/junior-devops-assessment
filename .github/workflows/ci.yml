@@ -81,6 +81,10 @@ jobs:
 
       # This test is meant to fail. continue-on-error lets the workflow finish
       # so we can check the result in the next step.
+      #
+      # Note: with continue-on-error, steps.<id>.outcome is "success" even when
+      # the command fails. steps.<id>.conclusion holds the real result, so that
+      # is what we check below.
       - name: Run the intentional failure test (expected to fail)
         id: intentional
         continue-on-error: true
@@ -88,11 +92,11 @@ jobs:
 
       - name: Confirm the deploy step would be blocked
         run: |
-          if [ "${{ steps.intentional.outcome }}" != "failure" ]; then
-            echo "::error::The intentional failure test passed - the gate demo is broken."
+          if [ "${{ steps.intentional.conclusion }}" != "failure" ]; then
+            echo "::error::The intentional failure test did not fail (got '${{ steps.intentional.conclusion }}'). The gate demo is broken."
             exit 1
           fi
-          echo "Confirmed: the test failed, so the 'deploy' job will be skipped."
+          echo "Confirmed: the test failed as intended, so the 'deploy' job will be skipped."
 
   # Build the image and check it is safe and runs as non-root.
   build:
@@ -117,7 +121,7 @@ jobs:
           cache-from: type=gha
 
       - name: Scan the image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table

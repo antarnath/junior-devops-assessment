@@ -65,6 +65,7 @@ Interactive API docs: <http://localhost:8000/docs>
 │   ├── architecture.md      # How it all fits together
 │   ├── runbook.md           # What to do when things break
 │   ├── decision-memo.md     # My choices and why
+│   ├── verification-guide.md# How to check everything works
 │   ├── ai-disclosure.md     # Where AI helped
 │   └── evidence/            # Proof that it all works
 ├── Dockerfile               # How the image is built
@@ -271,6 +272,7 @@ repository. The output is saved in [`docs/evidence/`](docs/evidence/README.md).
 | [`docs/architecture.md`](docs/architecture.md) | Diagrams, the two health endpoints, how versioning and rollback work |
 | [`docs/runbook.md`](docs/runbook.md) | Deploy, rollback, troubleshooting, the failure drill, known limits |
 | [`docs/decision-memo.md`](docs/decision-memo.md) | My decisions with reasoning, assumptions, the monitoring proposal, cost estimates, what I'd improve |
+| [`docs/verification-guide.md`](docs/verification-guide.md) | **How to check the whole project works** — what happens when you push, and every command to verify it |
 | [`docs/ai-disclosure.md`](docs/ai-disclosure.md) | Where AI helped and what I changed |
 
 ---
