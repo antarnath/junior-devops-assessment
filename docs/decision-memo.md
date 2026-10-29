@@ -1,7 +1,7 @@
 # Decision Memo
 
-**Author:** [Your name]
-**Date:** [Date]
+**Author:** antarnath
+**Date:** 30 October 2026
 
 ---
 
@@ -88,6 +88,35 @@ ending up inside the image.
 
 **Trade-off:** `.env` is still just a file on my laptop. A real deployment
 would use a secret manager — I have noted that in the cloud section.
+
+### 8. Test tools are not in the production image
+
+**Why:** `requirements.txt` holds only what the application needs to run.
+Testing and linting tools live in `requirements-dev.txt`, which is never copied
+into the image. That keeps the image smaller and means a vulnerability in a test
+tool can never reach production.
+
+**Trade-off:** Two files to keep in step, but the split is a one-line change.
+
+### 9. pip is removed from the final image
+
+**Why:** The application never installs a package at runtime, so pip has no
+reason to be in the image. The image scan flagged five HIGH findings that all
+came from pip's own vendored copies of `msgpack`, `setuptools` and `urllib3` —
+code the application never imports. Removing pip removed all five.
+
+**Trade-off:** If I ever needed to install a package at container start-up I
+would have to add pip back. I would rather rebuild the image than do that.
+
+### 10. Accepted scan findings are written down, not hidden
+
+**Why:** A security scan is only useful if someone has looked at what it
+reports. `.trivyignore.yaml` lists each accepted finding with the reason it
+does not apply and the date I will review it. If I ever add a real
+vulnerability, the ignore file will not cover it and the build will fail.
+
+**Trade-off:** An ignore file can be abused to hide findings. The reasons and
+review dates make that visible, and I am the only person who can change it.
 
 ---
 

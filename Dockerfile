@@ -24,9 +24,19 @@ WORKDIR /build
 # Copy requirements first so the dependency layer is cached across code changes.
 COPY requirements.txt .
 
+# The venv ships with older setuptools/urllib3 that have published advisories.
+# Upgrade them and drop the bundled copies so the image scan stays clean.
 RUN python -m venv /opt/venv \
-    && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install -r requirements.txt
+    && /opt/venv/bin/pip install --upgrade pip setuptools urllib3 \
+    && /opt/venv/bin/pip install -r requirements.txt \
+    && /opt/venv/bin/pip uninstall -y setuptools 2>/dev/null || true
+
+# pip is only needed to build the venv above. The application never installs
+# anything at runtime, so pip is removed from the final image. That also removes
+# pip's own vendored copies of msgpack/setuptools/urllib3, which the scanner
+# flagged even though the application never imports them.
+RUN /opt/venv/bin/pip uninstall -y pip \
+    && rm -rf /opt/venv/lib/python3.12/site-packages/pip
 
 # --------------------------------------------------------------------------
 # Stage 2: runtime
@@ -52,6 +62,11 @@ WORKDIR /app
 
 # Copy the virtualenv from the builder stage.
 COPY --from=builder /opt/venv /opt/venv
+
+# The base image ships its own pip under /usr/local. The application does not
+# install packages at runtime, so it is removed here too.
+RUN rm -rf /usr/local/lib/python3.12/site-packages/pip \
+    && rm -rf /usr/local/lib/python3.12/site-packages/pip-*.dist-info
 
 # Copy application code as root, then hand ownership to the non-root user.
 COPY --chown=apex:apex app/ ./app/

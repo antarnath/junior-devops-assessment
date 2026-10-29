@@ -1,33 +1,57 @@
-=== CI GATE RESULTS (the local equivalent of the CI 'test' job) ===
+=== CI GATE EVIDENCE ===
+Generated: 2026-10-29T19:12:01Z
 
-$ ruff check app tests
+--- 1. ruff check app tests ---
 All checks passed!
+exit=0
 
-$ black --check app tests
+--- 2. black --check app tests ---
 All done! ✨ 🍰 ✨
 6 files would be left unchanged.
+exit=0
 
-$ mypy app --ignore-missing-imports
+--- 3. mypy app --ignore-missing-imports ---
 Success: no issues found in 2 source files
+exit=0
 
-$ pytest -m 'not intentional_failure' -v
-tests/test_api.py::test_create_operation PASSED                          [  9%]
-tests/test_api.py::test_get_operation_by_id PASSED                       [ 18%]
-tests/test_api.py::test_list_operations PASSED                           [ 27%]
-tests/test_api.py::test_duplicate_reference_is_rejected PASSED           [ 36%]
-tests/test_api.py::test_unknown_operation_returns_404 PASSED             [ 45%]
-tests/test_api.py::test_missing_title_is_rejected PASSED                 [ 54%]
-tests/test_api.py::test_reference_is_made_uppercase PASSED               [ 63%]
-tests/test_health.py::test_healthz_returns_ok PASSED                     [ 72%]
-tests/test_health.py::test_healthz_includes_service_name PASSED          [ 81%]
-tests/test_health.py::test_healthz_sets_request_id_header PASSED         [ 90%]
-tests/test_health.py::test_readyz_checks_the_database PASSED             [100%]
-======================= 11 passed, 1 deselected in 0.33s =======================
+--- 4. pytest -m 'not intentional_failure' ---
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.7.0
+rootdir: /media/antar-chandra-nath/Media/Job_placement/Apex-junior-dev-ops
+configfile: pytest.ini
+testpaths: tests
+plugins: platformdirs-4.14.0, cov-6.0.0, anyio-4.15.1
+collected 12 items / 1 deselected / 11 selected
 
-$ pip-audit -r requirements.txt
+tests/test_api.py .......                                                [ 63%]
+tests/test_health.py ....                                                [100%]
+
+======================= 11 passed, 1 deselected in 0.21s =======================
+exit=0
+
+--- 5. pip-audit -r requirements.txt ---
 No known vulnerabilities found
+exit=0
 
-$ bandit -r app -ll
+--- 6. bandit -r app -ll ---
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.3
+[tester]	WARNING	nosec encountered (B104), but no failed test on line 274
+[tester]	WARNING	nosec encountered (B104), but no failed test on line 274
+[tester]	WARNING	nosec encountered (B104), but no failed test on line 274
+Run started:2026-10-29 19:12:15.235626
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 200
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 1
+
 Run metrics:
 	Total issues (by severity):
 		Undefined: 0
@@ -35,24 +59,9 @@ Run metrics:
 		Medium: 0
 		High: 0
 	Total issues (by confidence):
-
-=== INTENTIONAL FAILURE TEST ===
-This test is meant to fail. It proves the deploy gate blocks on failure.
-
-$ pytest tests/test_failure.py -m intentional_failure -v
-        assert response.status_code == 200
-    
-        # This assertion is wrong on purpose. The endpoint returns 200, not 418.
->       assert (
-            response.status_code == 418
-        ), "Intentional failure: proving CI blocks deployment when a test fails."
-E       AssertionError: Intentional failure: proving CI blocks deployment when a test fails.
-E       assert 200 == 418
-E        +  where 200 = <Response [200 OK]>.status_code
-
-tests/test_failure.py:36: AssertionError
-=========================== short test summary info ============================
-FAILED tests/test_failure.py::test_intentional_failure_blocks_deployment - AssertionError: Intentional failure: proving CI blocks deployment when a test fails.
-assert 200 == 418
- +  where 200 = <Response [200 OK]>.status_code
-============================== 1 failed in 0.06s ===============================
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+Files skipped (0):
+exit=0

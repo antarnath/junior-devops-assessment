@@ -1,6 +1,12 @@
-=== TEST RESULTS ===
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.7.0 -- /media/antar-chandra-nath/Media/Job_placement/Apex-junior-dev-ops/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /media/antar-chandra-nath/Media/Job_placement/Apex-junior-dev-ops
+configfile: pytest.ini
+testpaths: tests
+plugins: platformdirs-4.14.0, cov-6.0.0, anyio-4.15.1
+collecting ... collected 12 items / 1 deselected / 11 selected
 
-$ pytest -m 'not intentional_failure' -v
 tests/test_api.py::test_create_operation PASSED                          [  9%]
 tests/test_api.py::test_get_operation_by_id PASSED                       [ 18%]
 tests/test_api.py::test_list_operations PASSED                           [ 27%]
@@ -12,19 +18,14 @@ tests/test_health.py::test_healthz_returns_ok PASSED                     [ 72%]
 tests/test_health.py::test_healthz_includes_service_name PASSED          [ 81%]
 tests/test_health.py::test_healthz_sets_request_id_header PASSED         [ 90%]
 tests/test_health.py::test_readyz_checks_the_database PASSED             [100%]
-======================= 11 passed, 1 deselected in 0.21s =======================
-
-=== COVERAGE ===
-$ pytest -m 'not intentional_failure' --cov=app --cov-report=term-missing
-tests/test_health.py ....                                                [100%]
 
 ---------- coverage: platform linux, python 3.12.3-final-0 -----------
 Name              Stmts   Miss  Cover   Missing
 -----------------------------------------------
 app/__init__.py       1      0   100%
-app/main.py         114     19    83%   85-86, 94-98, 107-108, 131-133, 150-152, 185-187, 269-271
+app/main.py         114     19    83%   85-86, 94-98, 107-108, 131-133, 150-152, 185-187, 269-274
 -----------------------------------------------
 TOTAL               115     19    83%
 
 
-======================= 11 passed, 1 deselected in 0.32s =======================
+======================= 11 passed, 1 deselected in 0.62s =======================

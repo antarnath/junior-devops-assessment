@@ -130,6 +130,8 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          # Findings we reviewed and accepted, with reasons and review dates.
+          trivyignores: .trivyignore.yaml
 
       - name: Check the image runs as a non-root user
         run: |

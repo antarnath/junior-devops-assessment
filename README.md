@@ -74,6 +74,7 @@ Interactive API docs: <http://localhost:8000/docs>
 ├── requirements-dev.txt     # Extra tools for testing and checking
 ├── pyproject.toml           # Linter and formatter settings
 ├── pytest.ini               # Test settings
+├── .trivyignore.yaml        # Accepted image scan findings, with reasons
 ├── .dockerignore
 ├── .gitignore
 ├── .env.example
@@ -239,11 +240,12 @@ The full procedure is in [`docs/runbook.md`](docs/runbook.md).
 | Nothing secret in git | `.env` is in `.gitignore`; `.env.example` has placeholders only |
 | Nothing secret in the image | `.dockerignore` keeps `.env`, keys and certificates out of the build |
 | Runs as a normal user | The container runs as `apex` (UID 1001), and CI checks it is not root |
-| Small attack surface | No compilers or extra tools in the final image, only what the app needs |
+| Small attack surface | No compilers, pip, or extra tools in the final image, only what the app needs |
 | Dependency scanning | `pip-audit` in CI for known vulnerabilities |
-| Image scanning | Trivy scans the built image for known vulnerabilities |
+| Image scanning | Trivy scans the built image; accepted findings are listed with reasons in `.trivyignore.yaml` |
 | Code scanning | `bandit` in CI, plus ruff's security rules |
 | Pinned versions | Exact versions in `requirements.txt`; builds use `--pull` for a fresh base |
+| Test tools stay out of production | `requirements.txt` has runtime packages only; test tools live in `requirements-dev.txt` |
 | Database not published | PostgreSQL is only reachable inside the Compose network |
 
 ---

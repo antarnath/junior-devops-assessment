@@ -31,6 +31,11 @@ docs/
 *.md
 !README.md
 
+# Scanner configs are only used by CI, not by the image
+.trivyignore
+.trivyignore.yaml
+trivy.yaml
+
 # Local data
 data/
 *.db

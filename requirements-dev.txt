@@ -1,5 +1,10 @@
-# Development tools only. Not installed into the production image.
+# Development and CI dependencies. Never installed into the production image.
 -r requirements.txt
+
+# Testing
+pytest==9.0.3
+pytest-cov==6.0.0
+httpx==0.28.1
 
 # Linting and formatting
 ruff==0.8.6
@@ -11,6 +16,3 @@ mypy==1.14.0
 # Security scanning
 bandit==1.8.3
 pip-audit==2.7.3
-
-# Coverage reporting
-pytest-cov==6.0.0

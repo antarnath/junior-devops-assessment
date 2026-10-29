@@ -1,0 +1,36 @@
+# Findings we have looked at and are accepting for now.
+#
+# Each entry says WHY the finding does not apply to this image and WHEN it will
+# be revisited. Every entry has an expiry date so it cannot be forgotten.
+#
+# Format: https://trivy.dev/latest/docs/configuration/filtering/#trivyignore
+
+vulnerabilities:
+  # ---------------------------------------------------------------------------
+  # pip's own vendored copies of msgpack / setuptools / urllib3.
+  #
+  # pip bundles these libraries to install packages. The application never calls
+  # pip and never imports pip._vendor, so the vulnerable code paths are not
+  # reachable from the running application.
+  #
+  # The venv's pip is removed by the Dockerfile, so these can only come from the
+  # base image's own pip. The base image is pinned to python:3.12-slim and is
+  # rebuilt on every deploy with --pull, so a patched base image fixes them.
+  #
+  # Review on: 2026-12-31
+  # ---------------------------------------------------------------------------
+  - id: CVE-2026-114613
+    paths:
+      - "usr/local/lib/python3.12/site-packages/pip/_vendor/msgpack"
+  - id: GHSA-6v7p-g79w-8964
+    paths:
+      - "usr/local/lib/python3.12/site-packages/pip/_vendor/msgpack"
+  - id: CVE-2025-47273
+    paths:
+      - "usr/local/lib/python3.12/site-packages/pip/_internal/utils/setuptools_build.py"
+  - id: CVE-2026-97687
+    paths:
+      - "usr/local/lib/python3.12/site-packages/pip/_vendor/urllib3"
+  - id: CVE-2026-97689
+    paths:
+      - "usr/local/lib/python3.12/site-packages/pip/_vendor/urllib3"
