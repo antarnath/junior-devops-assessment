@@ -7,6 +7,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# `packages: write` is needed to push the image to GitHub Container Registry.
+# `contents: read` is all the other jobs need.
+permissions:
+  contents: read
+  packages: write
+
 env:
   IMAGE_NAME: apex-ops-api
   PYTHON_VERSION: "3.12"
