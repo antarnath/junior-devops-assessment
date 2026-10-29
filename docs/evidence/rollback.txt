@@ -1,0 +1,33 @@
+=== RELEASE AND ROLLBACK EVIDENCE ===
+
+--- First release ---
+$ ./scripts/deploy.sh 0.1.0
+Deployed apex-ops-api:0.1.0 successfully
+current:  apex-ops-api:0.1.0
+previous: (none - this was the first release)
+
+--- Second release ---
+$ ./scripts/deploy.sh 0.2.0
+Deployed apex-ops-api:0.2.0 successfully
+Rollback target: apex-ops-api:0.1.0
+
+--- Which image is running before the rollback ---
+$ docker inspect --format='{{.Config.Image}}' apex-api
+apex-ops-api:0.2.0
+
+--- Roll back ---
+$ ./scripts/rollback.sh
+Currently running apex-ops-api:0.2.0
+Rolling back to apex-ops-api:0.1.0
+API is healthy
+Checking the readiness endpoint
+{"status":"ready","checks":{"database":"ok"}}
+Rolled back to apex-ops-api:0.1.0 successfully
+
+--- Which image is running after the rollback ---
+$ docker inspect --format='{{.Config.Image}}' apex-api
+apex-ops-api:0.1.0
+
+--- The saved versions swapped, so a rollback can be rolled back ---
+current:  apex-ops-api:0.1.0
+previous: apex-ops-api:0.2.0

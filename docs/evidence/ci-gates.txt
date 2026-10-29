@@ -1,0 +1,48 @@
+=== CI GATE RESULTS (the local equivalent of the CI 'test' job) ===
+
+$ ruff check app tests
+All checks passed!
+
+$ black --check app tests
+All done! ✨ 🍰 ✨
+6 files would be left unchanged.
+
+$ mypy app --ignore-missing-imports
+Success: no issues found in 2 source files
+
+$ pytest -m 'not intentional_failure' -v
+tests/test_api.py::test_create_operation PASSED                          [  9%]
+tests/test_api.py::test_get_operation_by_id PASSED                       [ 18%]
+tests/test_api.py::test_list_operations PASSED                           [ 27%]
+tests/test_api.py::test_duplicate_reference_is_rejected PASSED           [ 36%]
+tests/test_api.py::test_unknown_operation_returns_404 PASSED             [ 45%]
+tests/test_api.py::test_missing_title_is_rejected PASSED                 [ 54%]
+tests/test_api.py::test_reference_is_made_uppercase PASSED               [ 63%]
+tests/test_health.py::test_healthz_returns_ok PASSED                     [ 72%]
+tests/test_health.py::test_healthz_includes_service_name PASSED          [ 81%]
+tests/test_health.py::test_healthz_sets_request_id_header PASSED         [ 90%]
+tests/test_health.py::test_readyz_checks_the_database PASSED             [100%]
+======================= 11 passed, 1 deselected in 0.22s =======================
+
+=== INTENTIONAL FAILURE TEST ===
+This test is meant to fail. It proves the deploy gate blocks on failure.
+
+$ pytest tests/test_failure.py -m intentional_failure -v
+        """
+        response = client.get("/healthz")
+        assert response.status_code == 200
+    
+        # This assertion is wrong on purpose. The endpoint returns 200, not 418.
+>       assert (
+            response.status_code == 418
+        ), "Intentional failure: proving CI blocks deployment when a test fails."
+E       AssertionError: Intentional failure: proving CI blocks deployment when a test fails.
+E       assert 200 == 418
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests/test_failure.py:36: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_failure.py::test_intentional_failure_blocks_deployment - AssertionError: Intentional failure: proving CI blocks deployment when a test fails.
+assert 200 == 418
+ +  where 200 = <Response [200 OK]>.status_code
+============================== 1 failed in 0.05s ===============================

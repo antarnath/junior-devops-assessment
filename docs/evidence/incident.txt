@@ -1,0 +1,35 @@
+=== FAILURE INVESTIGATION ===
+
+Scenario: the database goes away while the API is running.
+
+--- Step 1: stop the database ---
+$ docker compose stop db
+ Container apex-db Stopped 
+
+--- Step 2: the API is still alive (it did not crash) ---
+$ curl -i http://localhost:8000/healthz
+HTTP 200
+{"status":"ok","service":"apex-operations-api","version":"0.1.0"}
+--- Step 3: but it is not ready to serve traffic ---
+$ curl -i http://localhost:8000/readyz
+HTTP 503
+{"status":"not_ready","checks":{"database":"unavailable"}}
+--- Step 4: requests that need the database fail cleanly ---
+$ curl -i http://localhost:8000/api/v1/operations
+HTTP 500
+{"error":"internal_server_error","detail":"An unexpected error occurred.","request_id":"0f3fbecb-d6f7-4904-82ea-fd4df4434480"}
+--- Step 5: the logs show the cause ---
+$ docker compose logs --tail=5 api
+sqlalchemy.exc.OperationalError: (psycopg.OperationalError) [Errno -3] Temporary failure in name resolution
+
+--- Step 6: fix it and check recovery ---
+$ docker compose start db
+ Container apex-db Started 
+$ curl -i http://localhost:8000/readyz
+HTTP 200
+{"status":"ready","checks":{"database":"ok"}}
+--- Step 7: the API recovered by itself, no restart needed ---
+$ docker compose ps
+NAME       STATUS
+apex-api   Up 25 seconds (healthy)
+apex-db    Up 12 seconds (healthy)

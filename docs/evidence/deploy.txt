@@ -1,0 +1,27 @@
+=== DEPLOYMENT EVIDENCE ===
+
+--- Container runs as a non-root user ---
+$ docker run --rm --entrypoint id apex-ops-api:0.1.0
+uid=1001(apex) gid=1001(apex) groups=1001(apex)
+
+--- Stack status ---
+$ docker compose ps
+NAME       IMAGE                STATUS                        PORTS
+apex-api   apex-ops-api:0.1.0   Up About a minute (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apex-db    postgres:16-alpine   Up About a minute (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+--- Liveness check ---
+$ curl -s http://localhost:8000/healthz
+{"status":"ok","service":"apex-operations-api","version":"0.1.0"}
+--- Readiness check (includes the database) ---
+$ curl -s http://localhost:8000/readyz
+{"status":"ready","checks":{"database":"ok"}}
+--- Create an operation ---
+$ curl -X POST http://localhost:8000/api/v1/operations -H 'Content-Type: application/json' -d '{...}'
+{"id":2,"reference":"OPS-EVIDENCE","title":"Evidence run","status":"pending","priority":2,"notes":null,"created_at":"2026-10-29T18:34:35.586778+00:00"}
+--- List operations ---
+$ curl -s http://localhost:8000/api/v1/operations
+[{"id":2,"reference":"OPS-EVIDENCE","title":"Evidence run","status":"pending","priority":2,"notes":null,"created_at":"2026-10-29T18:34:35.586778+00:00"},{"id":1,"reference":"OPS-1001","title":"Stock reconciliation","status":"pending","priority":2,"notes":null,"created_at":"2026-10-29T18:33:11.063816+00:00"}]
+--- Structured log sample ---
+$ docker compose logs api | tail -1
+apex-api  | {"method": "GET", "path": "/api/v1/operations", "status": 200, "duration_ms": 4.06, "event": "request.completed", "request_id": "732cc0b2-e2e8-4f21-8297-dd906b41eb52", "level": "info", "timestamp": "2026-10-29T18:34:35

@@ -1,0 +1,30 @@
+=== TEST RESULTS ===
+
+$ pytest -m 'not intentional_failure' -v
+tests/test_api.py::test_create_operation PASSED                          [  9%]
+tests/test_api.py::test_get_operation_by_id PASSED                       [ 18%]
+tests/test_api.py::test_list_operations PASSED                           [ 27%]
+tests/test_api.py::test_duplicate_reference_is_rejected PASSED           [ 36%]
+tests/test_api.py::test_unknown_operation_returns_404 PASSED             [ 45%]
+tests/test_api.py::test_missing_title_is_rejected PASSED                 [ 54%]
+tests/test_api.py::test_reference_is_made_uppercase PASSED               [ 63%]
+tests/test_health.py::test_healthz_returns_ok PASSED                     [ 72%]
+tests/test_health.py::test_healthz_includes_service_name PASSED          [ 81%]
+tests/test_health.py::test_healthz_sets_request_id_header PASSED         [ 90%]
+tests/test_health.py::test_readyz_checks_the_database PASSED             [100%]
+======================= 11 passed, 1 deselected in 0.21s =======================
+
+=== COVERAGE ===
+$ pytest -m 'not intentional_failure' --cov=app --cov-report=term-missing
+tests/test_health.py ....                                                [100%]
+
+---------- coverage: platform linux, python 3.12.3-final-0 -----------
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+app/__init__.py       1      0   100%
+app/main.py         114     19    83%   85-86, 94-98, 107-108, 131-133, 150-152, 185-187, 269-271
+-----------------------------------------------
+TOTAL               115     19    83%
+
+
+======================= 11 passed, 1 deselected in 0.32s =======================

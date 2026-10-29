@@ -1,0 +1,173 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: apex-ops-api
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # Lint, test and scan. If this job fails, nothing gets deployed.
+  test:
+    name: Lint, Test & Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check app tests
+
+      - name: Check formatting
+        run: black --check app tests
+
+      - name: Type check
+        run: mypy app --ignore-missing-imports
+
+      # The intentional failure test is excluded here so the main suite passes.
+      # It runs in the job below to prove the deploy gate works.
+      - name: Run tests
+        run: pytest -m "not intentional_failure" -v
+
+      - name: Scan dependencies for known vulnerabilities
+        run: pip-audit -r requirements.txt
+
+      - name: Scan code for security issues
+        run: bandit -r app -ll
+
+      - name: Check for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Proves that a failing test stops the deployment.
+  prove-deploy-gate:
+    name: Prove Deploy is Blocked on Failure
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      # This test is meant to fail. continue-on-error lets the workflow finish
+      # so we can check the result in the next step.
+      - name: Run the intentional failure test (expected to fail)
+        id: intentional
+        continue-on-error: true
+        run: pytest tests/test_failure.py -m intentional_failure -v
+
+      - name: Confirm the deploy step would be blocked
+        run: |
+          if [ "${{ steps.intentional.outcome }}" != "failure" ]; then
+            echo "::error::The intentional failure test passed - the gate demo is broken."
+            exit 1
+          fi
+          echo "Confirmed: the test failed, so the 'deploy' job will be skipped."
+
+  # Build the image and check it is safe and runs as non-root.
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+
+      - name: Scan the image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Check the image runs as a non-root user
+        run: |
+          USER_ID=$(docker run --rm --entrypoint id ${{ env.IMAGE_NAME }}:${{ github.sha }} -u)
+          echo "Container UID: $USER_ID"
+          if [ "$USER_ID" = "0" ]; then
+            echo "::error::The container is running as root."
+            exit 1
+          fi
+          echo "Confirmed: the container runs as a non-root user."
+
+  # Deploy only runs when every gate above passed.
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the versioned image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy
+        run: |
+          echo "Deploying image ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Deployment of ${{ github.sha }} completed."

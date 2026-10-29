@@ -1,0 +1,45 @@
+# Keep the build context small and prevent secrets from entering any image layer.
+.git
+.gitignore
+.github
+
+# Secrets - must never be copied into an image
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+certs/
+secrets/
+
+# Python artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Tests and docs are not needed at runtime
+tests/
+docs/
+*.md
+!README.md
+
+# Local data
+data/
+*.db
+*.sqlite3
+logs/
+tmp/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
