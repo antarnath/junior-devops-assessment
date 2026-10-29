@@ -22,14 +22,24 @@ tests/test_health.py::test_healthz_returns_ok PASSED                     [ 72%]
 tests/test_health.py::test_healthz_includes_service_name PASSED          [ 81%]
 tests/test_health.py::test_healthz_sets_request_id_header PASSED         [ 90%]
 tests/test_health.py::test_readyz_checks_the_database PASSED             [100%]
-======================= 11 passed, 1 deselected in 0.22s =======================
+======================= 11 passed, 1 deselected in 0.33s =======================
+
+$ pip-audit -r requirements.txt
+No known vulnerabilities found
+
+$ bandit -r app -ll
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
 
 === INTENTIONAL FAILURE TEST ===
 This test is meant to fail. It proves the deploy gate blocks on failure.
 
 $ pytest tests/test_failure.py -m intentional_failure -v
-        """
-        response = client.get("/healthz")
         assert response.status_code == 200
     
         # This assertion is wrong on purpose. The endpoint returns 200, not 418.
@@ -45,4 +55,4 @@ tests/test_failure.py:36: AssertionError
 FAILED tests/test_failure.py::test_intentional_failure_blocks_deployment - AssertionError: Intentional failure: proving CI blocks deployment when a test fails.
 assert 200 == 418
  +  where 200 = <Response [200 OK]>.status_code
-============================== 1 failed in 0.05s ===============================
+============================== 1 failed in 0.06s ===============================

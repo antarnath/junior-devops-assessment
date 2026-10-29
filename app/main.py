@@ -268,4 +268,7 @@ async def get_operation(operation_id: int, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+    # Binding to 0.0.0.0 is required inside a container so the port is
+    # reachable from outside. It is not exposed to the host directly - the
+    # container port is published by Docker Compose.
+    uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")))  # nosec B104
