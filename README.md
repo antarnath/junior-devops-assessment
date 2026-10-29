@@ -75,6 +75,7 @@ Interactive API docs: <http://localhost:8000/docs>
 ├── pyproject.toml           # Linter and formatter settings
 ├── pytest.ini               # Test settings
 ├── .trivyignore.yaml        # Accepted image scan findings, with reasons
+├── .gitleaksignore          # Accepted secret scan findings, with reasons
 ├── .dockerignore
 ├── .gitignore
 ├── .env.example
@@ -244,6 +245,7 @@ The full procedure is in [`docs/runbook.md`](docs/runbook.md).
 | Dependency scanning | `pip-audit` in CI for known vulnerabilities |
 | Image scanning | Trivy scans the built image; accepted findings are listed with reasons in `.trivyignore.yaml` |
 | Code scanning | `bandit` in CI, plus ruff's security rules |
+| Secret scanning | `gitleaks` in CI over the code and the whole commit history; reviewed findings are listed in `.gitleaksignore` |
 | Pinned versions | Exact versions in `requirements.txt`; builds use `--pull` for a fresh base |
 | Test tools stay out of production | `requirements.txt` has runtime packages only; test tools live in `requirements-dev.txt` |
 | Database not published | PostgreSQL is only reachable inside the Compose network |

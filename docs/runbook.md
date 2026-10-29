@@ -238,6 +238,38 @@ the image. Work through it in this order:
 
 ---
 
+## 5c. If the secret scan fails in CI
+
+The `Check for committed secrets` step runs gitleaks over the working tree and
+the whole commit history.
+
+**If it flags a real secret**, it is almost always true. Revoke the key first,
+then remove it from the code, then rewrite the history so it is no longer
+reachable:
+
+```bash
+git filter-repo --invert-paths --path path/to/the/file
+```
+
+**If it flags something that is not a secret**, for example a long hex string
+that is really a commit SHA, add the fingerprint to `.gitleaksignore` with the
+reason:
+
+```
+<commit-sha>:<file>:<rule-id>:<line>
+```
+
+Get the exact fingerprint from the job summary, or run it locally:
+
+```bash
+gitleaks git . --report-format json --report-path leaks.json
+```
+
+Do not add a blanket ignore. Each entry should say why the finding is safe, so
+a reader can tell the difference between a reviewed finding and a hidden one.
+
+---
+
 ## 6. If you need help
 
 | Situation | Who |

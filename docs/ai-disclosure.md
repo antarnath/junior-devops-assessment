@@ -81,6 +81,8 @@ providers.
 | The workflow pinned `trivy-action` to a tag that did not exist | Corrected it to `v0.36.0`, which pins a `setup-trivy` version that resolves |
 | Trivy found five HIGH findings that all came from pip's own vendored copies of `msgpack`, `setuptools` and `urllib3` | Removed pip from the final image, which cleared all five without suppressing anything |
 | The image was still building with the test and linting tools inside it | Split `requirements.txt` (runtime only) from `requirements-dev.txt` (everything else) |
+| The workflow had no `permissions` block, so the deploy job could not push to GHCR | Added `contents: read` and `packages: write`, the minimum the workflow needs |
+| The evidence file recorded the full 40-character commit SHA, which the secret scanner reads as a possible leaked key | Shortened it to the 7-character form GitHub shows, and listed the one remaining history finding in `.gitleaksignore` with the reason it is not a secret |
 
 ---
 

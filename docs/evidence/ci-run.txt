@@ -1,36 +1,37 @@
 === GITHUB ACTIONS RUN EVIDENCE ===
-Generated: 2026-10-29T19:27:12Z
+Generated: 2026-10-29T19:47:52Z
 Repository: https://github.com/antarnath/junior-devops-assessment
-Run: https://github.com/antarnath/junior-devops-assessment/actions/runs/40939376289
-Commit: 498aa07
+Run: https://github.com/antarnath/junior-devops-assessment/actions/runs/40942583363
+Commit: 5275789
 
 --- Pipeline result ---
-Run ID:     40939376289
+Run ID:     40942583363
 Status:     completed
 Conclusion: success
 
 --- Jobs (from the GitHub API check-runs endpoint) ---
-Lint, Test & Scan              | completed | success
+Lint, Test & Scan                  | completed | success
 Prove Deploy is Blocked on Failure | completed | success
-Build Image                    | completed | success
-Deploy                         | completed | success
+Build Image                        | completed | success
+Deploy                             | completed | success
 
 --- What each job checked ---
-Lint, Test & Scan              ruff, black, mypy, 11 tests, pip-audit, bandit, gitleaks
+Lint, Test & Scan                  ruff, black, mypy, 11 tests, pip-audit, bandit, gitleaks
 Prove Deploy is Blocked on Failure  ran the intentional failure test and confirmed it failed
-Build Image                    built the image, Trivy scanned it (0 HIGH/CRITICAL), UID is not root
-Deploy                         pushed the image to ghcr.io and tagged it
+Build Image                        built the image, Trivy scanned it (0 HIGH/CRITICAL), UID is not root
+Deploy                             pushed the image to ghcr.io and tagged it
 
 --- Image published to GHCR ---
-The deploy job pushed two tags: the full commit SHA and `latest`.
+The deploy job pushed two tags: the full commit SHA and 'latest'.
 $ docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:latest
 manifest found (amd64 + attestation manifests)
-$ docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:498aa07
+$ docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:5275789
 manifest found
 
-(The full 40-character SHA is used for the real tag. It is shortened here
-because the secret scanner reads a long hex string as a possible leaked key.)
+(The real tag uses the full 40-character SHA. It is shortened here because
+the secret scanner reads a long hex string as a possible leaked key.)
 
---- Full run history ---
-d41ff2a | failure | Deploy job: 'installation not allowed to Create organization package'
+--- Every run so far ---
 498aa07 | success | all four jobs green after adding packages: write permission
+328fa1b | failure | secret scan read the full commit SHA as a leaked key
+5275789 | success | SHA shortened in the evidence file, finding listed in .gitleaksignore
