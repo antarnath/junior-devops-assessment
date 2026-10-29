@@ -79,24 +79,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-dev.txt
 
-      # This test is meant to fail. continue-on-error lets the workflow finish
-      # so we can check the result in the next step.
-      #
-      # Note: with continue-on-error, steps.<id>.outcome is "success" even when
-      # the command fails. steps.<id>.conclusion holds the real result, so that
-      # is what we check below.
+      # This test is meant to fail. We capture the exit code ourselves instead
+      # of using continue-on-error, because that setting hides the real result
+      # from both steps.<id>.outcome and steps.<id>.conclusion.
       - name: Run the intentional failure test (expected to fail)
         id: intentional
-        continue-on-error: true
-        run: pytest tests/test_failure.py -m intentional_failure -v
+        run: |
+          set +e
+          pytest tests/test_failure.py -m intentional_failure -v
+          EXIT_CODE=$?
+          set -e
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          exit 0
 
       - name: Confirm the deploy step would be blocked
         run: |
-          if [ "${{ steps.intentional.conclusion }}" != "failure" ]; then
-            echo "::error::The intentional failure test did not fail (got '${{ steps.intentional.conclusion }}'). The gate demo is broken."
+          if [ "${{ steps.intentional.outputs.exit_code }}" = "0" ]; then
+            echo "::error::The intentional failure test passed. The gate demo is broken - the test is supposed to fail."
             exit 1
           fi
-          echo "Confirmed: the test failed as intended, so the 'deploy' job will be skipped."
+          echo "Confirmed: the test failed with exit code ${{ steps.intentional.outputs.exit_code }}, so the 'deploy' job will be skipped."
 
   # Build the image and check it is safe and runs as non-root.
   build:
@@ -121,7 +123,7 @@ jobs:
           cache-from: type=gha
 
       - name: Scan the image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.30.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
