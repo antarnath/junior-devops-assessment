@@ -1,0 +1,32 @@
+=== GITHUB ACTIONS RUN EVIDENCE ===
+Generated: 2026-10-29T19:27:12Z
+Repository: https://github.com/antarnath/junior-devops-assessment
+Run: https://github.com/antarnath/junior-devops-assessment/actions/runs/40939376289
+Commit: 498aa0725ca7748b782b4e88095cb05c609fe550
+
+--- Pipeline result ---
+Run ID:     40939376289
+Status:     completed
+Conclusion: success
+
+--- Jobs (from the GitHub API check-runs endpoint) ---
+Lint, Test & Scan              | completed | success
+Prove Deploy is Blocked on Failure | completed | success
+Build Image                    | completed | success
+Deploy                         | completed | success
+
+--- What each job checked ---
+Lint, Test & Scan              ruff, black, mypy, 11 tests, pip-audit, bandit, gitleaks
+Prove Deploy is Blocked on Failure  ran the intentional failure test and confirmed it failed
+Build Image                    built the image, Trivy scanned it (0 HIGH/CRITICAL), UID is not root
+Deploy                         pushed the image to ghcr.io and tagged it
+
+--- Image published to GHCR ---
+$ docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:latest
+manifest found (amd64 + attestation manifests)
+$ docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:498aa0725ca7748b782b4e88095cb05c609fe550
+manifest found
+
+--- Full run history ---
+d41ff2a | failure | Deploy job: 'installation not allowed to Create organization package'
+498aa07 | success | all four jobs green after adding packages: write permission
