@@ -26,6 +26,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The secret scan looks at the whole commit history, so it needs
+          # the full history rather than just the latest commit.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -59,10 +63,14 @@ jobs:
       - name: Scan code for security issues
         run: bandit -r app -ll
 
+      # Scans the working tree and the whole commit history for secrets.
+      # .gitleaksignore holds the findings we reviewed, each with a reason.
       - name: Check for committed secrets
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          gitleaks-ignore-path: .gitleaksignore
 
   # Proves that a failing test stops the deployment.
   prove-deploy-gate:

@@ -1,0 +1,13 @@
+# Findings we have looked at and are accepting.
+#
+# The secret scanner reads a full 40-character Git commit SHA as a possible
+# leaked API key, because it looks like a random hex string. This is a commit
+# SHA of this repository - it is not a credential, and it grants no access to
+# anything.
+#
+# The current evidence file uses the short SHA instead, so this entry only
+# covers the one earlier commit that still has the long form in its history.
+#
+# Format: one fingerprint per line, as printed by `gitleaks --report-format json`.
+
+328fa1b539eb2f89e951a13bedb4edca748959b3:docs/evidence/ci-run.txt:generic-api-key:27
