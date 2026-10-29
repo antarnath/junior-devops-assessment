@@ -5,6 +5,7 @@ points back to one of these files.
 
 | File | What it shows |
 |---|---|
+| `ci-run.txt` | The hosted GitHub Actions run: all four jobs green, and the image pulled from `ghcr.io` afterwards. |
 | `ci-gates.txt` | Lint, format and type checks all pass. The 11 tests pass. The intentional failure test genuinely fails, with the assertion error. |
 | `tests.txt` | Each of the 11 tests listed with its result, plus a coverage report (83%). |
 | `deploy.txt` | The container runs as a non-root user (`uid=1001(apex)`). The stack is up with both containers healthy. Both health endpoints respond. An operation is created and listed. A structured JSON log line. |
@@ -50,6 +51,6 @@ curl -i http://localhost:8000/readyz                       # 200
 
 ## Still to capture
 
-- **GitHub Actions run** — the pipeline is defined and the local equivalent is
-  verified above, but the hosted run still needs to be triggered once the repo
-  is pushed, and a screenshot taken.
+- **Screenshot of the GitHub Actions run** — the run itself is recorded in
+  `ci-run.txt` with the job results pulled from the API. A screenshot of the
+  green run in the browser would be a nice addition to the submission.

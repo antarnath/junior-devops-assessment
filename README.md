@@ -257,6 +257,7 @@ repository. The output is saved in [`docs/evidence/`](docs/evidence/README.md).
 
 | Claim | Evidence |
 |---|---|
+| The pipeline passes on GitHub | [`docs/evidence/ci-run.txt`](docs/evidence/ci-run.txt) |
 | 11 tests pass | [`docs/evidence/tests.txt`](docs/evidence/tests.txt) |
 | The intentional failure really fails | [`docs/evidence/ci-gates.txt`](docs/evidence/ci-gates.txt) |
 | Lint, format and types are clean | [`docs/evidence/ci-gates.txt`](docs/evidence/ci-gates.txt) |

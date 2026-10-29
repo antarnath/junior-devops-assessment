@@ -49,8 +49,11 @@ So a push to any other branch runs the checks but never deploys.
 Run #2  ✓ Lint, Test & Scan              (success)
         ✓ Prove Deploy is Blocked...     (success)
         ✓ Build Image                    (success)
-        - Deploy                         (skipped, or runs on main)
+        ✓ Deploy                         (success)
 ```
+
+That is the run that is recorded in
+[`docs/evidence/ci-run.txt`](evidence/ci-run.txt).
 
 ---
 
@@ -63,10 +66,44 @@ Open: <https://github.com/antarnath/junior-devops-assessment/actions>
 | The `test` job log | Each check ran and passed, with the 11 test names listed |
 | The `prove-deploy-gate` job log | The intentional test failed on purpose, and the job confirmed it |
 | The `build` job log | The image built, Trivy found no serious problems, and the container is not root |
-| The `deploy` job | Either ran (on `main`) or was skipped |
+| The `deploy` job log | The image was pushed to `ghcr.io` with the commit SHA and `latest` tags |
 
 Click any job to see the full log. The `Run tests` step shows every test name
 and its result.
+
+You can also check the published image from your machine:
+
+```bash
+docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:latest
+```
+
+That should print the image manifest, which proves the deploy job really
+published something.
+
+---
+
+## Part 2b: What happens when a test fails
+
+This is the part the assessment cares about most, so it is worth demonstrating
+live.
+
+1. Open `tests/test_failure.py` and change `418` to `200` on the line with the
+   assertion. That makes the "failing" test start passing.
+2. Push to any branch and open a pull request.
+3. Watch the Actions page. The `test` job fails, and `build`, `deploy` are
+   both **skipped**.
+4. Put the `418` back and push again. Everything goes green.
+
+To see it on `main` instead of a pull request, push a commit that breaks a
+test. The `test` job fails, `build` and `deploy` are skipped, and nothing is
+published to `ghcr.io`. You can check that with:
+
+```bash
+docker manifest inspect ghcr.io/antarnath/junior-devops-assessment/apex-ops-api:latest
+```
+
+The manifest will still be the old one, because the new image was never
+pushed.
 
 ---
 
@@ -121,6 +158,18 @@ docker run --rm --entrypoint id apex-ops-api:0.1.0
 ```
 
 Expect `uid=1001(apex) gid=1001(apex) groups=1001(apex)` — not `uid=0(root)`.
+
+### Check 4b — the image has no known vulnerabilities
+
+```bash
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy:0.70.0 image --ignorefile .trivyignore.yaml \
+  --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 apex-ops-api:0.1.0
+```
+
+Expect **0 vulnerabilities** and exit code `0`. The `--ignorefile` only covers
+the findings listed in `.trivyignore.yaml`, each of which has a written
+reason and a review date.
 
 ### Check 5 — the stack deploys and serves traffic
 
@@ -192,11 +241,11 @@ docker compose down -v
 | The assessment asks for | Where it is | Verified by |
 |---|---|---|
 | Dockerfile with health check and non-root | `Dockerfile` | Check 4 |
-| CI that installs, lints, tests, builds, and blocks on failure | `.github/workflows/ci.yml` | Part 2, Check 1-3 |
+| CI that installs, lints, tests, builds, and blocks on failure | `.github/workflows/ci.yml` | Part 2, Part 2b, Check 1-3 |
 | Compose with app, database, config, persistent storage | `compose.yaml` | Check 5 |
 | Release and rollback with versioned images | `scripts/deploy.sh`, `scripts/rollback.sh` | Check 6 |
 | Structured logs, health checks, metrics proposal | `app/main.py`, `docs/decision-memo.md` | Check 5, Check 7 |
-| Secrets, least privilege, scanning, cost | `docs/decision-memo.md` | Check 3 |
+| Secrets, least privilege, scanning, cost | `docs/decision-memo.md` | Check 3, Check 4b |
 | 6+ automated checks, one intentionally failing | `tests/` (11 + 1) | Check 1, Check 2 |
 | CI evidence, deployment demo, rollback evidence | `docs/evidence/` | Part 2 |
 | Runbook for deploy, rollback, incidents | `docs/runbook.md` | Part 3 |

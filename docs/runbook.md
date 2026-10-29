@@ -200,6 +200,41 @@ The captured output is in `docs/evidence/`.
 | See the logs | `docker compose logs -f api` |
 | Check for known dependency vulnerabilities | `pip-audit -r requirements.txt` |
 | Check the code for security issues | `bandit -r app -ll` |
+| Check the built image for vulnerabilities | See "Image scan fails in CI" below |
+
+---
+
+## 5b. If the image scan fails in CI
+
+The `Build Image` job fails if Trivy finds a HIGH or CRITICAL vulnerability in
+the image. Work through it in this order:
+
+1. **Read the Trivy output in the job log.** It names the package, the
+   installed version and the version that fixes it.
+
+2. **If it is one of the application's own packages**, fix it by bumping the
+   version in `requirements.txt` and pushing. That is the correct fix.
+
+3. **If it is a Debian OS package**, it comes from the base image. Rebuilding
+   with `docker compose build --pull api` picks up a newer base image, which
+   usually has the fix.
+
+4. **Only if the finding genuinely does not apply** — for example the code is
+   vendored inside a tool the application never calls — add it to
+   `.trivyignore.yaml` with the reason and a review date:
+
+   ```yaml
+   vulnerabilities:
+     - id: CVE-2026-97687
+       paths:
+         - "usr/local/lib/python3.12/site-packages/pip/_vendor/urllib3"
+   ```
+
+   Every entry needs a reason. A file of unexplained ignores is worse than no
+   ignore file, because it looks like the scan passes when it does not.
+
+5. **Do not lower the severity or turn off the scan** to make it pass. The
+   point of the gate is that it fails when there is a real problem.
 
 ---
 
